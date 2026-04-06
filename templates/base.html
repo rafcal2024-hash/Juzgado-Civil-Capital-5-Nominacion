@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}AHPC · Juzgado Civil 5°{% endblock %}</title>
+<style>
+:root{
+  --verde:#1a6b3a;--verde-dark:#0f4526;--verde-light:#e8f5ee;
+  --verde-mid:#2d9957;--acento:#f0a500;
+  --gris:#f7f8fa;--borde:#d1d9e0;--texto:#1a2433;--muted:#6b7a8d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:var(--texto);background:var(--gris);min-height:100vh}
+a{color:var(--verde);text-decoration:none}
+a:hover{color:var(--verde-mid);text-decoration:underline}
+
+/* NAV */
+nav{background:var(--verde-dark);padding:.75rem 1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+nav .brand{color:#fff;font-weight:700;font-size:1.05rem;letter-spacing:.02em;white-space:nowrap}
+nav .brand span{color:var(--acento)}
+nav a.nav-link{color:#c8e6d4;font-size:.88rem;padding:.3rem .65rem;border-radius:4px;transition:background .15s}
+nav a.nav-link:hover,nav a.nav-link.active{background:rgba(255,255,255,.15);color:#fff;text-decoration:none}
+
+/* HERO STRIP */
+.hero-strip{background:linear-gradient(135deg,var(--verde-dark) 0%,var(--verde) 100%);color:#fff;padding:1.4rem 2rem;text-align:center}
+.hero-strip h1{font-size:1.3rem;font-weight:700;margin-bottom:.25rem}
+.hero-strip p{font-size:.85rem;opacity:.85}
+
+/* MAIN */
+main{max-width:1200px;margin:2rem auto;padding:0 1.5rem}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card h2{font-size:1rem;font-weight:700;color:var(--verde-dark);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:2px solid var(--verde-light)}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-box{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:1.2rem 1rem;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.stat-box .num{font-size:2rem;font-weight:800;color:var(--verde);line-height:1}
+.stat-box .lbl{font-size:.78rem;color:var(--muted);margin-top:.3rem}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+thead th{background:var(--verde-dark);color:#c8e6d4;padding:.6rem .8rem;text-align:left;font-weight:600;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--borde)}
+tbody tr:nth-child(even){background:var(--verde-light)}
+tbody tr:hover{background:#d4edda}
+td{padding:.55rem .8rem;vertical-align:top}
+td a{color:var(--verde)}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.3rem}
+input,select{width:100%;padding:.5rem .75rem;border:1px solid var(--borde);border-radius:6px;font-size:.9rem;outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(26,107,58,.12)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.2rem;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:background .15s,transform .1s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--verde);color:#fff}
+.btn-primary:hover{background:var(--verde-mid)}
+.btn-secondary{background:#fff;color:var(--verde);border:1px solid var(--verde)}
+.btn-secondary:hover{background:var(--verde-light)}
+.btn-pdf{background:var(--acento);color:#fff}
+.btn-pdf:hover{background:#d4900a}
+
+/* BADGES */
+.badge{display:inline-block;padding:.18rem .55rem;border-radius:20px;font-size:.72rem;font-weight:700}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-amber{background:#fef3c7;color:#92400e}
+
+/* PAGINATION */
+.pagination{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.pagination button{padding:.35rem .75rem;border:1px solid var(--borde);background:#fff;border-radius:5px;cursor:pointer;font-size:.82rem}
+.pagination button.active{background:var(--verde);color:#fff;border-color:var(--verde)}
+.pagination button:disabled{opacity:.4;cursor:default}
+.pagination .info{font-size:.82rem;color:var(--muted);margin-left:.5rem}
+
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--borde);border-top:none;border-radius:0 0 6px 6px;z-index:100;max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.ac-list.open{display:block}
+.ac-item{padding:.45rem .75rem;cursor:pointer;font-size:.875rem;display:flex;justify-content:space-between}
+.ac-item:hover{background:var(--verde-light)}
+.ac-item .ac-count{color:var(--muted);font-size:.75rem}
+
+/* TAG BAR */
+.tag-bar{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.tag{background:var(--verde-light);color:var(--verde-dark);padding:.25rem .65rem;border-radius:20px;font-size:.78rem;font-weight:600}
+
+/* RESULT COUNT */
+.result-count{font-size:.85rem;color:var(--muted);margin-bottom:.75rem}
+.result-count strong{color:var(--verde-dark)}
+
+/* LOADING */
+#loading{display:none;text-align:center;padding:2rem;color:var(--muted)}
+.spinner{width:32px;height:32px;border:3px solid var(--borde);border-top-color:var(--verde);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto .5rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOP CAUSAS */
+.causa-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.5rem}
+.causa-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;border:1px solid var(--borde);border-radius:6px;font-size:.82rem;background:#fff}
+.causa-item:hover{background:var(--verde-light);border-color:var(--verde)}
+.causa-item .c-num{font-weight:700;color:var(--verde);font-size:.75rem}
+
+/* FOOTER */
+footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:.78rem;margin-top:3rem;border-top:1px solid var(--borde)}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<nav>
+  <span class="brand">AHPC · <span>Juzgado Civil 5°</span></span>
+  <a href="/" class="nav-link {% if request.endpoint=='index' %}active{% endif %}">Inicio</a>
+  <a href="/buscar" class="nav-link {% if request.endpoint=='buscar' %}active{% endif %}">Buscar</a>
+  <a href="/estadisticas" class="nav-link {% if request.endpoint=='estadisticas' %}active{% endif %}">Estadísticas</a>
+</nav>
+<div class="hero-strip">
+  <h1>Archivo Histórico de la Provincia de Córdoba</h1>
+  <p>Juzgado Civil Capital · 5° Nominación &nbsp;·&nbsp; Índice Onomástico de Expedientes &nbsp;·&nbsp; 1912 – 1929</p>
+</div>
+{% block content %}{% endblock %}
+<footer>Archivo Histórico de la Provincia de Córdoba &nbsp;·&nbsp; Juzgado Civil Capital 5° Nominación &nbsp;·&nbsp; Serie 1912–1929</footer>
+</body>
+</html>

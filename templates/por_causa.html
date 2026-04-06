@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}{{ causa }} · AHPC Civil 5°{% endblock %}
+{% block content %}
+<main>
+  <div style="margin-bottom:1rem">
+    <a href="javascript:history.back()" class="btn btn-secondary">← Volver</a>
+  </div>
+  <div class="card">
+    <h2>Causa: {{ causa }}</h2>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">{{ registros|length }} expediente(s)</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Año</th><th>Legajo</th><th>Expte.</th><th>Partes</th><th>Causa</th></tr></thead>
+        <tbody>
+          {% for r in registros %}
+          <tr>
+            <td>{{ r.anio or '' }}</td>
+            <td>{{ r.legajo or '' }}</td>
+            <td>{{ r.expediente or '' }}</td>
+            <td><a href="/detalle/{{ r.id }}">{{ r.partes or '' }}</a></td>
+            <td>{{ r.causa or '' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+{% endblock %}

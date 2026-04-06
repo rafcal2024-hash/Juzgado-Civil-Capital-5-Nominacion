@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block title %}Buscar · AHPC Civil 5°{% endblock %}
+{% block content %}
+<main>
+  <div class="card">
+    <h2>Búsqueda de expedientes</h2>
+    <div class="form-grid" id="searchForm">
+      <div>
+        <label>Búsqueda libre (texto)</label>
+        <input type="text" id="f-texto" placeholder="Palabras en partes o causa…">
+      </div>
+      <div class="ac-wrap">
+        <label>Partes</label>
+        <input type="text" id="f-partes" placeholder="Apellido, nombre…" value="{{ partes_pre }}">
+        <div class="ac-list" id="ac-partes"></div>
+      </div>
+      <div class="ac-wrap">
+        <label>Causa</label>
+        <input type="text" id="f-causa" placeholder="Tipo de causa…" value="{{ causa_pre }}">
+        <div class="ac-list" id="ac-causa"></div>
+      </div>
+      <div>
+        <label>Año desde</label>
+        <input type="number" id="f-desde" placeholder="1912" min="1912" max="1929">
+      </div>
+      <div>
+        <label>Año hasta</label>
+        <input type="number" id="f-hasta" placeholder="1929" min="1912" max="1929">
+      </div>
+      <div>
+        <label>Legajo</label>
+        <input type="text" id="f-legajo" placeholder="N° legajo">
+      </div>
+      <div>
+        <label>Expediente</label>
+        <input type="text" id="f-expediente" placeholder="N° expediente">
+      </div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-primary" onclick="doSearch(1)">🔍 Buscar</button>
+      <button class="btn btn-secondary" onclick="clearForm()">✕ Limpiar</button>
+      <button class="btn btn-pdf" onclick="exportPDF()">⬇ Exportar PDF</button>
+    </div>
+  </div>
+
+  <div id="loading"><div class="spinner"></div>Buscando…</div>
+
+  <div id="results" style="display:none">
+    <div class="result-count" id="result-count"></div>
+    <div class="tag-bar" id="tag-bar"></div>
+    <div class="card" style="padding:0">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Año</th><th>Legajo</th><th>Expte.</th><th>Partes</th><th>Causa</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+  <div id="no-results" style="display:none;text-align:center;padding:2.5rem;color:var(--muted)">
+    <div style="font-size:2.5rem;margin-bottom:.5rem">🔎</div>
+    No se encontraron resultados para esta búsqueda.
+  </div>
+</main>
+
+<script>
+let currentPage = 1, totalResults = 0, perPage = 50;
+
+function getParams(){
+  return {
+    texto: document.getElementById('f-texto').value.trim(),
+    partes: document.getElementById('f-partes').value.trim(),
+    causa: document.getElementById('f-causa').value.trim(),
+    anio_desde: document.getElementById('f-desde').value.trim(),
+    anio_hasta: document.getElementById('f-hasta').value.trim(),
+    legajo: document.getElementById('f-legajo').value.trim(),
+    expediente: document.getElementById('f-expediente').value.trim(),
+  };
+}
+
+function doSearch(page){
+  currentPage = page;
+  const p = getParams();
+  const qs = new URLSearchParams({...p, page});
+  document.getElementById('loading').style.display='block';
+  document.getElementById('results').style.display='none';
+  document.getElementById('no-results').style.display='none';
+
+  fetch('/api/buscar?'+qs)
+    .then(r=>r.json()).then(data=>{
+      document.getElementById('loading').style.display='none';
+      totalResults = data.total;
+      if(data.total===0){
+        document.getElementById('no-results').style.display='block'; return;
+      }
+      document.getElementById('results').style.display='block';
+      document.getElementById('result-count').innerHTML=
+        `Se encontraron <strong>${data.total.toLocaleString('es')}</strong> expedientes`;
+      renderTags(p);
+      renderTable(data.registros);
+      renderPagination(data.total, page, data.per_page);
+    });
+}
+
+function renderTags(p){
+  const bar = document.getElementById('tag-bar'); bar.innerHTML='';
+  const labels = {texto:'Texto',partes:'Partes',causa:'Causa',anio_desde:'Desde',anio_hasta:'Hasta',legajo:'Legajo',expediente:'Expte.'};
+  Object.entries(p).forEach(([k,v])=>{
+    if(v){ bar.innerHTML+=`<span class="tag">${labels[k]}: ${v}</span>`; }
+  });
+}
+
+function renderTable(rows){
+  const tb = document.getElementById('tbl-body'); tb.innerHTML='';
+  rows.forEach(r=>{
+    tb.innerHTML+=`<tr>
+      <td>${r.anio||''}</td>
+      <td>${r.legajo||''}</td>
+      <td>${r.expediente||''}</td>
+      <td><a href="/detalle/${r.id}">${r.partes||''}</a></td>
+      <td><a href="/causa/${encodeURIComponent(r.causa||'')}">${r.causa||''}</a></td>
+    </tr>`;
+  });
+}
+
+function renderPagination(total, page, pp){
+  const pages = Math.ceil(total/pp);
+  const pg = document.getElementById('pagination'); pg.innerHTML='';
+  if(pages<=1) return;
+  const btn=(label,p,disabled,active)=>{
+    const b=document.createElement('button');
+    b.textContent=label; b.disabled=disabled;
+    if(active) b.classList.add('active');
+    b.onclick=()=>doSearch(p); return b;
+  };
+  pg.appendChild(btn('«',1,page===1,false));
+  pg.appendChild(btn('‹',page-1,page===1,false));
+  let start=Math.max(1,page-2), end=Math.min(pages,page+2);
+  for(let i=start;i<=end;i++) pg.appendChild(btn(i,i,false,i===page));
+  pg.appendChild(btn('›',page+1,page===pages,false));
+  pg.appendChild(btn('»',pages,page===pages,false));
+  const info=document.createElement('span'); info.className='info';
+  info.textContent=`Página ${page} de ${pages}`; pg.appendChild(info);
+}
+
+function clearForm(){
+  ['f-texto','f-partes','f-causa','f-desde','f-hasta','f-legajo','f-expediente']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('results').style.display='none';
+  document.getElementById('no-results').style.display='none';
+}
+
+function exportPDF(){
+  const p = getParams();
+  const qs = new URLSearchParams(p);
+  window.open('/api/exportar-pdf?'+qs,'_blank');
+}
+
+/* AUTOCOMPLETE */
+function setupAC(inputId, listId, endpoint, labelKey){
+  const inp = document.getElementById(inputId);
+  const lst = document.getElementById(listId);
+  let timer;
+  inp.addEventListener('input',()=>{
+    clearTimeout(timer);
+    const q = inp.value.trim();
+    if(q.length<2){lst.classList.remove('open');return;}
+    timer=setTimeout(()=>{
+      fetch(`/api/${endpoint}?q=${encodeURIComponent(q)}`)
+        .then(r=>r.json()).then(data=>{
+          lst.innerHTML='';
+          if(!data.length){lst.classList.remove('open');return;}
+          data.forEach(item=>{
+            const d=document.createElement('div'); d.className='ac-item';
+            d.innerHTML=`<span>${item[labelKey]}</span><span class="ac-count">${item.total}</span>`;
+            d.onclick=()=>{inp.value=item[labelKey];lst.classList.remove('open');doSearch(1);};
+            lst.appendChild(d);
+          });
+          lst.classList.add('open');
+        });
+    },220);
+  });
+  document.addEventListener('click',e=>{if(!inp.contains(e.target))lst.classList.remove('open');});
+}
+
+setupAC('f-partes','ac-partes','partes-autocomplete','partes');
+setupAC('f-causa','ac-causa','causas-autocomplete','causa');
+
+// Enter key search
+document.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch(1);}));
+
+// Pre-fill from URL
+{% if partes_pre or causa_pre %}
+doSearch(1);
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Estadísticas · AHPC Civil 5°{% endblock %}
+{% block content %}
+<main>
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="num">{{ "{:,}".format(total).replace(",",".") }}</div>
+      <div class="lbl">Expedientes totales</div>
+    </div>
+    <div class="stat-box">
+      <div class="num">{{ total_causas }}</div>
+      <div class="lbl">Tipos de causa</div>
+    </div>
+    <div class="stat-box">
+      <div class="num">{{ total_legajos }}</div>
+      <div class="lbl">Legajos</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+    <!-- Por decada -->
+    <div class="card">
+      <h2>Expedientes por década</h2>
+      {% set max_t = por_decada|map(attribute='total')|max %}
+      {% for d in por_decada %}
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem;font-size:.85rem">
+        <span style="width:55px;color:var(--muted)">{{ d.decada }}s</span>
+        <div style="flex:1;background:var(--verde-light);border-radius:4px;height:20px;overflow:hidden">
+          <div style="width:{{ (d.total/max_t*100)|int }}%;background:var(--verde);height:100%;border-radius:4px"></div>
+        </div>
+        <span style="width:55px;text-align:right;font-weight:700;color:var(--verde-dark)">{{ d.total }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Top causas -->
+    <div class="card">
+      <h2>Top 30 causas</h2>
+      {% set max_c = top_causas|map(attribute='total')|max %}
+      {% for c in top_causas %}
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem;font-size:.8rem">
+        <span style="width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          <a href="/causa/{{ c.causa|urlencode }}" title="{{ c.causa }}">{{ c.causa }}</a>
+        </span>
+        <div style="flex:1;background:var(--verde-light);border-radius:3px;height:14px;overflow:hidden">
+          <div style="width:{{ (c.total/max_c*100)|int }}%;background:var(--verde-mid);height:100%;border-radius:3px"></div>
+        </div>
+        <span style="width:38px;text-align:right;font-weight:700;color:var(--verde-dark);font-size:.75rem">{{ c.total }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</main>
+{% endblock %}

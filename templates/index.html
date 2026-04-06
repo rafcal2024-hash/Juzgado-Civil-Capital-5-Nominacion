@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Inicio · AHPC Civil 5°{% endblock %}
+{% block content %}
+<main>
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="num">{{ "{:,}".format(total).replace(",",".") }}</div>
+      <div class="lbl">Expedientes indexados</div>
+    </div>
+    <div class="stat-box">
+      <div class="num">{{ anio_inicio }}</div>
+      <div class="lbl">Año inicial</div>
+    </div>
+    <div class="stat-box">
+      <div class="num">{{ anio_fin }}</div>
+      <div class="lbl">Año final</div>
+    </div>
+    <div class="stat-box">
+      <div class="num">{{ causas }}</div>
+      <div class="lbl">Tipos de causa</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;flex-wrap:wrap">
+
+    <!-- ACCESO RÁPIDO -->
+    <div class="card">
+      <h2>Acceso rápido</h2>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <a href="/buscar" class="btn btn-primary" style="justify-content:center">🔍 Buscar expedientes</a>
+        <a href="/estadisticas" class="btn btn-secondary" style="justify-content:center">📊 Ver estadísticas</a>
+      </div>
+      <div style="margin-top:1.5rem">
+        <h2>Distribución por década</h2>
+        <div style="margin-top:.75rem">
+          {% set max_t = por_decada|map(attribute='t')|max %}
+          {% for d in por_decada %}
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;font-size:.83rem">
+            <span style="width:50px;color:var(--muted)">{{ d.decada }}s</span>
+            <div style="flex:1;background:var(--verde-light);border-radius:4px;height:18px;overflow:hidden">
+              <div style="width:{{ (d.t / max_t * 100)|int }}%;background:var(--verde);height:100%;border-radius:4px;transition:width .3s"></div>
+            </div>
+            <span style="width:50px;text-align:right;font-weight:600;color:var(--verde-dark)">{{ d.t }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP CAUSAS -->
+    <div class="card">
+      <h2>Causas más frecuentes</h2>
+      <div class="causa-list">
+        {% for c in top_causas %}
+        <a href="/causa/{{ c.causa|urlencode }}" class="causa-item" style="text-decoration:none;color:inherit">
+          <span>{{ c.causa }}</span>
+          <span class="c-num">{{ c.t }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</main>
+{% endblock %}
